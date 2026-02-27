@@ -1,0 +1,9 @@
+{
+	"id": "obsidian-custom-export",
+	"name": "Custom Export",
+	"version": "1.0.0",
+	"minAppVersion": "1.0.0",
+	"description": "Export notes to HTML, Markdown, and PDF with theme CSS, asset handling, and per-device output folders.",
+	"author": "saltyfireball",
+	"isDesktopOnly": false
+}
