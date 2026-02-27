@@ -1,4 +1,5 @@
 import {
+	Component,
 	MarkdownRenderer,
 	Notice,
 	TFile,
@@ -12,6 +13,7 @@ import {
 	TFolder,
 	MarkdownView,
 	Plugin,
+	requestUrl,
 } from "obsidian";
 import type { ExportSettings } from "./settings";
 import {
@@ -236,15 +238,19 @@ async function exportHtml(plugin: ExportPlugin, ctx: ExportContext) {
 			markdown,
 			file.path,
 		);
-		/* eslint-disable obsidianmd/no-plugin-as-component -- MarkdownRenderer.render requires a Component; plugin is the only available instance */
-		await MarkdownRenderer.render(
-			app,
-			normalizedMarkdown,
-			renderEl,
-			file.path,
-			plugin,
-		);
-		/* eslint-enable obsidianmd/no-plugin-as-component */
+		const component = new Component();
+		component.load();
+		try {
+			await MarkdownRenderer.render(
+				app,
+				normalizedMarkdown,
+				renderEl,
+				file.path,
+				component,
+			);
+		} finally {
+			component.unload();
+		}
 		await waitForDomIdle(renderEl, { timeoutMs: 3000, idleMs: 250 });
 		if (settings.postProcessDelayMs > 0) {
 			await sleep(settings.postProcessDelayMs);
@@ -468,8 +474,7 @@ async function generateBannerHtml(
 	const fm = cache?.frontmatter;
 	if (!fm) return null;
 
-	// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- frontmatter values are untyped
-	const bannerImage = fm.banner_image || fm.backdrop || fm.banner;
+	const bannerImage: unknown = fm.banner_image || fm.backdrop || fm.banner;
 	if (!bannerImage) return null;
 
 	const bannerPlugin = plugin.app.plugins?.plugins?.["banner-images"] as Record<string, unknown> | undefined;
@@ -723,15 +728,19 @@ async function exportPdf(plugin: ExportPlugin, ctx: ExportContext) {
 			markdown,
 			file.path,
 		);
-		/* eslint-disable obsidianmd/no-plugin-as-component -- MarkdownRenderer.render requires a Component; plugin is the only available instance */
-		await MarkdownRenderer.render(
-			app,
-			normalizedMarkdown,
-			renderEl,
-			file.path,
-			plugin,
-		);
-		/* eslint-enable obsidianmd/no-plugin-as-component */
+		const component = new Component();
+		component.load();
+		try {
+			await MarkdownRenderer.render(
+				app,
+				normalizedMarkdown,
+				renderEl,
+				file.path,
+				component,
+			);
+		} finally {
+			component.unload();
+		}
 		await waitForDomIdle(renderEl, { timeoutMs: 3000, idleMs: 250 });
 		if (settings.postProcessDelayMs > 0) {
 			await sleep(settings.postProcessDelayMs);
@@ -1040,8 +1049,8 @@ async function htmlToPdfViaApi(input: {
 
 	const callApi = async (body: Record<string, unknown>): Promise<PdfApiResponse> => {
 		input.onStatus?.("Requesting PDF service...");
-		// eslint-disable-next-line no-restricted-globals -- external PDF API requires fetch with POST body
-		const res = await fetch(input.apiUrl, {
+		const res = await requestUrl({
+			url: input.apiUrl,
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json",
@@ -1049,24 +1058,23 @@ async function htmlToPdfViaApi(input: {
 			},
 			body: JSON.stringify(body),
 		});
-		return res.json() as Promise<PdfApiResponse>;
+		return res.json as PdfApiResponse;
 	};
 
 	const getPdfBlob = async (data: PdfApiResponse) => {
 		input.onStatus?.("Downloading PDF...");
 		if (data.error) throw new Error(data.error);
 		if (data.downloadUrl) {
-			// eslint-disable-next-line no-restricted-globals -- downloading PDF from pre-signed URL
-			const res = await fetch(data.downloadUrl);
-			return res.blob();
+			const res = await requestUrl({ url: data.downloadUrl });
+			return new Blob([res.arrayBuffer]);
 		}
 		throw new Error("Unexpected PDF API response.");
 	};
 
 	const { uploadUrl, s3Key } = await callApi({ action: "getUploadUrl" });
 	input.onStatus?.("Uploading HTML...");
-	// eslint-disable-next-line no-restricted-globals -- uploading HTML to pre-signed S3 URL
-	await fetch(uploadUrl ?? "", {
+	await requestUrl({
+		url: uploadUrl ?? "",
 		method: "PUT",
 		headers: { "Content-Type": "text/html" },
 		body: input.html,

@@ -32,9 +32,8 @@ export default class CustomExportPlugin extends Plugin implements ExportPlugin {
 	}
 
 	async loadSettings() {
-		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- loadData returns any
-		const savedData: Record<string, unknown> = (await this.loadData()) ?? {};
-		this.settings = deepMerge(DEFAULT_SETTINGS as unknown as Record<string, unknown>, savedData) as unknown as ExportSettings;
+		const savedData = (await this.loadData()) as Partial<ExportSettings> | null;
+		this.settings = deepMerge(DEFAULT_SETTINGS as unknown as Record<string, unknown>, (savedData ?? {}) as Record<string, unknown>) as unknown as ExportSettings;
 
 		if (!this.settings.outputFolderByDevice) {
 			this.settings.outputFolderByDevice = {};
