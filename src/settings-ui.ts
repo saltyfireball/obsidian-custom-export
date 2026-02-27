@@ -9,7 +9,7 @@ interface ExportSettingsParams {
 }
 
 export function renderExportGeneralTab({ app, plugin, contentEl }: ExportSettingsParams) {
-  contentEl.createEl("h2", { text: "Export Settings" });
+  new Setting(contentEl).setName("Export settings").setHeading();
   contentEl.createEl("p", {
     text: "Configure how notes are exported to HTML, Markdown, and PDF.",
     cls: "setting-item-description",
@@ -127,7 +127,7 @@ export function renderExportGeneralTab({ app, plugin, contentEl }: ExportSetting
 }
 
 export function renderExportPdfTab({ app, plugin, contentEl }: ExportSettingsParams) {
-  contentEl.createEl("h2", { text: "PDF Export" });
+  new Setting(contentEl).setName("PDF export").setHeading();
   contentEl.createEl("p", {
     text: "Configure PDF export settings. PDF export requires a configured Lambda API.",
     cls: "setting-item-description",
@@ -242,7 +242,7 @@ export function renderExportPdfTab({ app, plugin, contentEl }: ExportSettingsPar
 }
 
 export function renderExportMarkdownTab({ app, plugin, contentEl }: ExportSettingsParams) {
-  contentEl.createEl("h2", { text: "Markdown Export" });
+  new Setting(contentEl).setName("Markdown export").setHeading();
   contentEl.createEl("p", {
     text: "Configure how notes are converted when exporting to portable Markdown.",
     cls: "setting-item-description",
