@@ -88,7 +88,7 @@ function slugifyHeading(text: string): string {
 }
 
 function convertWikilinks(app: App, markdown: string, sourcePath: string): string {
-  return markdown.replace(/\[\[([^\]]+)\]\]/g, (full, inner) => {
+  return markdown.replace(/\[\[([^\]]+)\]\]/g, (full: string, inner: string) => {
     const parts = inner.split("|");
     const target = (parts[0] ?? "").trim();
     const alias = parts[1]?.trim();
@@ -183,7 +183,7 @@ async function resolveEmbed(
 }
 
 export function normalizeImageEmbeds(app: App, markdown: string, sourcePath: string): string {
-  return markdown.replace(/!\[\[([^\]]+)\]\]/g, (full, inner) => {
+  return markdown.replace(/!\[\[([^\]]+)\]\]/g, (full: string, inner: string) => {
     const parts = inner.split("|");
     const raw = (parts[0] ?? "").trim();
     const alias = parts[1]?.trim();
@@ -284,8 +284,9 @@ async function rewriteAssetLinks(
   assetsFolder: string,
   outputInfo: OutputInfo
 ): Promise<string> {
-  const pathMod = (window as any).require?.("path") as typeof import("path");
-  const fsPromises = ((window as any).require?.("fs") as typeof import("fs"))?.promises;
+  const windowObj = window as unknown as { require?: (module: string) => unknown };
+  const pathMod = windowObj.require?.("path") as typeof import("path") | undefined;
+  const fsPromises = (windowObj.require?.("fs") as typeof import("fs") | undefined)?.promises;
 
   async function copyFile(file: TFile): Promise<string> {
     const binary = await app.vault.adapter.readBinary(file.path);

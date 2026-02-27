@@ -96,7 +96,8 @@ export async function inlineLocalAssetUrls(app: App, cssText: string): Promise<s
   const matches = Array.from(cssText.matchAll(/url\(([^)]+)\)/g));
   if (matches.length === 0) return cssText;
   const replacements = new Map<string, string>();
-  const fsPromises = ((window as any).require?.("fs") as typeof import("fs"))?.promises;
+  const windowObj = window as unknown as { require?: (module: string) => typeof import("fs") };
+  const fsPromises = windowObj.require?.("fs")?.promises;
 
   for (const match of matches) {
     const raw = match[1] ?? "";
@@ -119,7 +120,7 @@ export async function inlineLocalAssetUrls(app: App, cssText: string): Promise<s
         const nodeBuf = await fsPromises.readFile(trimmed);
         buffer = nodeBuf.buffer.slice(nodeBuf.byteOffset, nodeBuf.byteOffset + nodeBuf.byteLength) as ArrayBuffer;
       } else {
-        const res = await fetch(trimmed);
+        const res = await fetch(trimmed); // eslint-disable-line no-restricted-globals -- CSS asset URLs may be external file:// or relative paths not suitable for requestUrl
         if (!res.ok) continue;
         buffer = await res.arrayBuffer();
       }
@@ -154,10 +155,10 @@ export async function collectEnabledSnippets(
 ): Promise<{ cssText: string; snippetPaths: string[] }> {
   const parts: string[] = [];
   const loadedPaths: string[] = [];
-  const base = normalizePath(".obsidian");
+  const base = normalizePath(app.vault.configDir);
   const appearancePath = normalizePath(`${base}/appearance.json`);
   const appearanceRaw = await safeRead(app, appearancePath);
-  let appearance: any = null;
+  let appearance: unknown = null;
   if (appearanceRaw) {
     try {
       appearance = JSON.parse(appearanceRaw);
@@ -166,8 +167,9 @@ export async function collectEnabledSnippets(
     }
   }
 
-  const enabledSnippets: string[] = Array.isArray(appearance?.enabledCssSnippets)
-    ? appearance.enabledCssSnippets
+  const parsed = appearance as { enabledCssSnippets?: unknown } | null;
+  const enabledSnippets: string[] = Array.isArray(parsed?.enabledCssSnippets)
+    ? (parsed.enabledCssSnippets as string[])
     : [];
   const snippetsDir = normalizePath(`${base}/snippets`);
   const candidatePaths = new Set<string>();

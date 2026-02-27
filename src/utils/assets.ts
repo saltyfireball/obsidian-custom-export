@@ -151,11 +151,14 @@ export async function copyLocalAssetsToDisk(
   sourcePath: string,
   assetsFolder: string
 ) {
-  const path = (window as any).require?.("path") as typeof import("path");
-  const fsPromises = ((window as any).require?.("fs") as typeof import("fs"))?.promises;
-  if (!path || !fsPromises) {
+  const windowObj = window as unknown as { require?: (module: string) => unknown };
+  const pathMod = windowObj.require?.("path") as typeof import("path") | undefined;
+  const fsMod = (windowObj.require?.("fs") as typeof import("fs") | undefined)?.promises;
+  if (!pathMod || !fsMod) {
     throw new Error("Node fs/path unavailable. External export requires desktop mode.");
   }
+  const path = pathMod;
+  const fsPromises = fsMod;
 
   async function writeBinary(targetPath: string, data: ArrayBuffer) {
     const dir = path.dirname(targetPath);

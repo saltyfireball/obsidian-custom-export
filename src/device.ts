@@ -52,23 +52,25 @@ function getDeviceType() {
 }
 
 function getOrCreateDeviceId() {
-  let deviceId = localStorage.getItem(DEVICE_STORAGE_KEY);
+  let deviceId = localStorage.getItem(DEVICE_STORAGE_KEY); // eslint-disable-line no-restricted-globals -- device ID is global, not vault-specific
   if (!deviceId) {
     deviceId = generateUniqueId();
-    localStorage.setItem(DEVICE_STORAGE_KEY, deviceId);
+    localStorage.setItem(DEVICE_STORAGE_KEY, deviceId); // eslint-disable-line no-restricted-globals -- device ID is global, not vault-specific
   }
   return deviceId;
 }
 
 export function isMobileApp(app: App): boolean {
-	const platform = Platform as any;
+	const platform = Platform as unknown as Record<string, boolean | undefined>;
+	const appRecord = app as unknown as Record<string, boolean | undefined>;
 	const isMobilePlatform =
-		Boolean((app as any).isMobile) ||
+		Boolean(appRecord.isMobile) ||
 		Boolean(platform.isMobile) ||
 		Boolean(platform.isMobileApp) ||
 		Boolean(platform.isAndroidApp) ||
 		Boolean(platform.isIosApp);
-	const hasElectron = Boolean((window as any).require?.("electron"));
+	const windowObj = window as unknown as { require?: (module: string) => unknown };
+	const hasElectron = Boolean(windowObj.require?.("electron"));
 	return isMobilePlatform || !hasElectron;
 }
 

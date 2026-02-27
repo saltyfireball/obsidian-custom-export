@@ -23,11 +23,7 @@ export class CustomExportSettingTab extends PluginSettingTab {
 
 		// Tab navigation
 		const nav = containerEl.createDiv("custom-export-nav");
-		nav.style.display = "flex";
-		nav.style.gap = "4px";
-		nav.style.marginBottom = "16px";
-		nav.style.borderBottom = "1px solid var(--background-modifier-border)";
-		nav.style.paddingBottom = "8px";
+		nav.setCssStyles({ display: "flex", gap: "4px", marginBottom: "16px", borderBottom: "1px solid var(--background-modifier-border)", paddingBottom: "8px" });
 
 		const tabs: { id: TabId; label: string }[] = [
 			{ id: "general", label: "General" },
@@ -54,19 +50,12 @@ export class CustomExportSettingTab extends PluginSettingTab {
 
 		tabs.forEach((tab) => {
 			const btn = nav.createEl("button", { text: tab.label });
-			btn.style.padding = "6px 14px";
-			btn.style.borderRadius = "6px 6px 0 0";
-			btn.style.border = "1px solid var(--background-modifier-border)";
-			btn.style.borderBottom = "none";
-			btn.style.cursor = "pointer";
-			btn.style.fontSize = "0.9em";
+			btn.setCssStyles({ padding: "6px 14px", borderRadius: "6px 6px 0 0", border: "1px solid var(--background-modifier-border)", borderBottom: "none", cursor: "pointer", fontSize: "0.9em" });
 
 			if (tab.id === this.activeTab) {
-				btn.style.background = "var(--background-primary)";
-				btn.style.fontWeight = "600";
+				btn.setCssStyles({ background: "var(--background-primary)", fontWeight: "600" });
 			} else {
-				btn.style.background = "var(--background-secondary)";
-				btn.style.color = "var(--text-muted)";
+				btn.setCssStyles({ background: "var(--background-secondary)", color: "var(--text-muted)" });
 			}
 
 			btn.addEventListener("click", () => {

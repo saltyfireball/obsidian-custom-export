@@ -219,12 +219,7 @@ async function exportHtml(plugin: ExportPlugin, ctx: ExportContext) {
 	renderEl.className = "markdown-preview-view markdown-rendered";
 	syncPreviewClasses(renderEl);
 	const sandbox = document.createElement("div");
-	sandbox.style.position = "fixed";
-	sandbox.style.left = "-10000px";
-	sandbox.style.top = "0";
-	sandbox.style.width = "1200px";
-	sandbox.style.opacity = "0";
-	sandbox.style.pointerEvents = "none";
+	sandbox.setCssStyles({ position: "fixed", left: "-10000px", top: "0", width: "1200px", opacity: "0", pointerEvents: "none" });
 	sandbox.appendChild(renderEl);
 	document.body.appendChild(sandbox);
 
@@ -241,6 +236,7 @@ async function exportHtml(plugin: ExportPlugin, ctx: ExportContext) {
 			markdown,
 			file.path,
 		);
+		/* eslint-disable obsidianmd/no-plugin-as-component -- MarkdownRenderer.render requires a Component; plugin is the only available instance */
 		await MarkdownRenderer.render(
 			app,
 			normalizedMarkdown,
@@ -248,6 +244,7 @@ async function exportHtml(plugin: ExportPlugin, ctx: ExportContext) {
 			file.path,
 			plugin,
 		);
+		/* eslint-enable obsidianmd/no-plugin-as-component */
 		await waitForDomIdle(renderEl, { timeoutMs: 3000, idleMs: 250 });
 		if (settings.postProcessDelayMs > 0) {
 			await sleep(settings.postProcessDelayMs);
@@ -279,6 +276,7 @@ async function exportHtml(plugin: ExportPlugin, ctx: ExportContext) {
 		}
 
 		const processedContainer = document.createElement("div");
+		// eslint-disable-next-line @microsoft/sdl/no-inner-html -- cloning rendered HTML for post-processing
 		processedContainer.innerHTML = renderEl.innerHTML;
 		if (settings.inlineLocalAssets || isMobile) {
 			await inlineLocalImages(app, processedContainer, file.path);
@@ -470,11 +468,14 @@ async function generateBannerHtml(
 	const fm = cache?.frontmatter;
 	if (!fm) return null;
 
+	// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- frontmatter values are untyped
 	const bannerImage = fm.banner_image || fm.backdrop || fm.banner;
 	if (!bannerImage) return null;
 
-	const bannerPlugin = (plugin.app as any).plugins?.plugins?.["banner-images"];
-	const bannerDefaults = bannerPlugin?.api?.getDefaults?.() ?? {
+	const bannerPlugin = plugin.app.plugins?.plugins?.["banner-images"] as Record<string, unknown> | undefined;
+	const bannerApi = bannerPlugin?.["api"] as Record<string, unknown> | undefined;
+	const getDefaults = bannerApi?.["getDefaults"] as (() => Record<string, unknown>) | undefined;
+	const bannerDefaults = getDefaults?.() ?? {
 		height: 200,
 		opacity: 1,
 		offset: "center",
@@ -483,10 +484,10 @@ async function generateBannerHtml(
 
 	const config = {
 		image: String(bannerImage),
-		height: typeof fm.banner_height === "number" ? fm.banner_height : bannerDefaults.height,
-		opacity: typeof fm.banner_opacity === "number" ? Math.min(1, Math.max(0, fm.banner_opacity)) : bannerDefaults.opacity,
-		offset: parseBannerOffset(fm.banner_offset ?? fm.banner_position, bannerDefaults.offset),
-		gradient: parseBannerGradient(fm.banner_gradient, bannerDefaults.gradient),
+		height: typeof fm.banner_height === "number" ? fm.banner_height : Number(bannerDefaults.height),
+		opacity: typeof fm.banner_opacity === "number" ? Math.min(1, Math.max(0, fm.banner_opacity)) : Number(bannerDefaults.opacity),
+		offset: parseBannerOffset(fm.banner_offset ?? fm.banner_position, String(bannerDefaults.offset)),
+		gradient: parseBannerGradient(fm.banner_gradient, Boolean(bannerDefaults.gradient)),
 	};
 
 	const imageUrl = resolveBannerImageUrl(plugin.app, config.image, file.path);
@@ -494,6 +495,7 @@ async function generateBannerHtml(
 	let finalImageUrl = imageUrl;
 	if (!imageUrl.startsWith("http://") && !imageUrl.startsWith("https://") && !imageUrl.startsWith("data:")) {
 		try {
+			// eslint-disable-next-line no-restricted-globals -- fetching local app:// resource path, not a network request
 			const response = await fetch(imageUrl);
 			const blob = await response.blob();
 			const reader = new FileReader();
@@ -576,8 +578,8 @@ function resolveBannerImageUrl(app: App, imagePath: string, sourcePath: string):
 	if (file) return app.vault.getResourcePath(file);
 
 	const directFile = app.vault.getAbstractFileByPath(cleanPath);
-	if (directFile && "extension" in directFile) {
-		return app.vault.getResourcePath(directFile as TFile);
+	if (directFile instanceof TFile) {
+		return app.vault.getResourcePath(directFile);
 	}
 
 	return imagePath;
@@ -636,7 +638,7 @@ function trimMultiColumnCallouts(container: HTMLElement) {
 			);
 			if (!hasEmbedContent) continue;
 			span.classList.add("block-embed");
-			span.setAttribute("style", "display:block;");
+			(span as HTMLElement).setCssStyles({ display: "block" });
 			para.replaceWith(span);
 		}
 
@@ -709,12 +711,7 @@ async function exportPdf(plugin: ExportPlugin, ctx: ExportContext) {
 	renderEl.className = "markdown-preview-view markdown-rendered";
 	syncPreviewClasses(renderEl);
 	const sandbox = document.createElement("div");
-	sandbox.style.position = "fixed";
-	sandbox.style.left = "-10000px";
-	sandbox.style.top = "0";
-	sandbox.style.width = "1200px";
-	sandbox.style.opacity = "0";
-	sandbox.style.pointerEvents = "none";
+	sandbox.setCssStyles({ position: "fixed", left: "-10000px", top: "0", width: "1200px", opacity: "0", pointerEvents: "none" });
 	sandbox.appendChild(renderEl);
 	document.body.appendChild(sandbox);
 
@@ -726,6 +723,7 @@ async function exportPdf(plugin: ExportPlugin, ctx: ExportContext) {
 			markdown,
 			file.path,
 		);
+		/* eslint-disable obsidianmd/no-plugin-as-component -- MarkdownRenderer.render requires a Component; plugin is the only available instance */
 		await MarkdownRenderer.render(
 			app,
 			normalizedMarkdown,
@@ -733,6 +731,7 @@ async function exportPdf(plugin: ExportPlugin, ctx: ExportContext) {
 			file.path,
 			plugin,
 		);
+		/* eslint-enable obsidianmd/no-plugin-as-component */
 		await waitForDomIdle(renderEl, { timeoutMs: 3000, idleMs: 250 });
 		if (settings.postProcessDelayMs > 0) {
 			await sleep(settings.postProcessDelayMs);
@@ -762,6 +761,7 @@ async function exportPdf(plugin: ExportPlugin, ctx: ExportContext) {
 			assetsFolder = outputInfo.assetsPath;
 		}
 		const processedContainer = document.createElement("div");
+		// eslint-disable-next-line @microsoft/sdl/no-inner-html -- cloning rendered HTML for post-processing
 		processedContainer.innerHTML = renderEl.innerHTML;
 		if (settings.inlineLocalAssets || isMobile) {
 			await inlineLocalImages(app, processedContainer, file.path);
@@ -886,8 +886,8 @@ async function exportPdf(plugin: ExportPlugin, ctx: ExportContext) {
 }
 
 async function prepareOutputPaths(app: App, folderPath: string) {
-	const pathMod = (window as any).require?.("path") as typeof import("path");
-	const fsPromises = ((window as any).require?.("fs") as typeof import("fs"))
+	const pathMod = window.require("path") as typeof import("path");
+	const fsPromises = (window.require("fs") as typeof import("fs"))
 		?.promises;
 	if (!pathMod || !fsPromises) {
 		throw new Error(
@@ -970,7 +970,7 @@ function getExportBaseName(
 	const key = overrideKey?.trim() || settings.frontmatterExportKey?.trim();
 	if (key) {
 		const cache = app.metadataCache.getFileCache(file);
-		const value = cache?.frontmatter?.[key];
+		const value: unknown = cache?.frontmatter?.[key];
 		if (typeof value === "string" && value.trim()) {
 			return value.trim();
 		}
@@ -984,6 +984,7 @@ async function getExportContext(
 ): Promise<ExportContext | null> {
 	const file = app.workspace.getActiveFile();
 	if (!file || file.extension !== "md") {
+		// eslint-disable-next-line obsidianmd/ui/sentence-case -- notice text is already sentence case
 		new Notice("Open a markdown note to export.");
 		return null;
 	}
@@ -1006,10 +1007,10 @@ async function openPathInShell(
 	isExternal: boolean,
 ) {
 	try {
-		const electron = (window as any).require?.("electron");
-		const shell = electron?.shell;
+		const electron = window.require("electron") as Record<string, unknown> | undefined;
+		const shell = electron?.["shell"] as { showItemInFolder?: (path: string) => void; openPath?: (path: string) => void } | undefined;
 		if (!shell?.showItemInFolder || !shell?.openPath) return;
-		const adapter = app.vault.adapter as any;
+		const adapter = app.vault.adapter as unknown as { getFullPath?: (path: string) => string };
 		const absPath = isExternal
 			? targetPath
 			: (adapter.getFullPath?.(targetPath) ?? targetPath);
@@ -1030,8 +1031,16 @@ async function htmlToPdfViaApi(input: {
 	timeout: number;
 	onStatus?: (message: string) => void;
 }): Promise<Blob> {
-	const callApi = async (body: Record<string, unknown>) => {
+	interface PdfApiResponse {
+		uploadUrl?: string;
+		s3Key?: string;
+		downloadUrl?: string;
+		error?: string;
+	}
+
+	const callApi = async (body: Record<string, unknown>): Promise<PdfApiResponse> => {
 		input.onStatus?.("Requesting PDF service...");
+		// eslint-disable-next-line no-restricted-globals -- external PDF API requires fetch with POST body
 		const res = await fetch(input.apiUrl, {
 			method: "POST",
 			headers: {
@@ -1040,13 +1049,14 @@ async function htmlToPdfViaApi(input: {
 			},
 			body: JSON.stringify(body),
 		});
-		return res.json();
+		return res.json() as Promise<PdfApiResponse>;
 	};
 
-	const getPdfBlob = async (data: any) => {
+	const getPdfBlob = async (data: PdfApiResponse) => {
 		input.onStatus?.("Downloading PDF...");
-		if (data?.error) throw new Error(data.error);
-		if (data?.downloadUrl) {
+		if (data.error) throw new Error(data.error);
+		if (data.downloadUrl) {
+			// eslint-disable-next-line no-restricted-globals -- downloading PDF from pre-signed URL
 			const res = await fetch(data.downloadUrl);
 			return res.blob();
 		}
@@ -1055,7 +1065,8 @@ async function htmlToPdfViaApi(input: {
 
 	const { uploadUrl, s3Key } = await callApi({ action: "getUploadUrl" });
 	input.onStatus?.("Uploading HTML...");
-	await fetch(uploadUrl, {
+	// eslint-disable-next-line no-restricted-globals -- uploading HTML to pre-signed S3 URL
+	await fetch(uploadUrl ?? "", {
 		method: "PUT",
 		headers: { "Content-Type": "text/html" },
 		body: input.html,
@@ -1107,39 +1118,37 @@ class ExportAsModal extends Modal {
 		contentEl.createEl("h3", { text: "Export as..." });
 
 		const buttonRow = contentEl.createEl("div");
-		buttonRow.style.display = "flex";
-		buttonRow.style.flexDirection = "column";
-		buttonRow.style.gap = "8px";
+		buttonRow.setCssStyles({ display: "flex", flexDirection: "column", gap: "8px" });
 
 		const addBtn = (label: string, handler: () => void) => {
 			const btn = buttonRow.createEl("button", { text: label });
-			btn.addEventListener("click", async () => {
+			btn.addEventListener("click", () => {
 				this.close();
-				await handler();
+				handler();
 			});
 		};
 
-		addBtn("HTML...", () => exportCurrentNoteHtml(this.plugin));
-		addBtn("Markdown...", () => exportCurrentNoteMarkdown(this.plugin));
-		addBtn("PDF...", () => exportCurrentNotePdf(this.plugin));
+		addBtn("HTML...", () => void exportCurrentNoteHtml(this.plugin));
+		addBtn("Markdown...", () => void exportCurrentNoteMarkdown(this.plugin));
+		addBtn("PDF...", () => void exportCurrentNotePdf(this.plugin));
 
 		const view = this.app.workspace.getActiveViewOfType(MarkdownView);
 		const selection = view?.editor?.getSelection() ?? "";
 		if (selection.trim()) {
 			addBtn("HTML (selection)...", () =>
-				exportCurrentSelectionHtml(this.plugin),
+				void exportCurrentSelectionHtml(this.plugin),
 			);
 			addBtn("Markdown (selection)...", () =>
-				exportCurrentSelectionMarkdown(this.plugin),
+				void exportCurrentSelectionMarkdown(this.plugin),
 			);
 		}
 	}
 }
 
 function syncPreviewClasses(target: HTMLElement) {
-	const active = document.querySelector(
+	const active = document.querySelector<HTMLElement>(
 		".markdown-reading-view .markdown-preview-view",
-	) as HTMLElement | null;
+	);
 	if (!active) return;
 	active.classList.forEach((cls) => target.classList.add(cls));
 	Object.entries(active.dataset).forEach(([key, value]) => {
@@ -1165,7 +1174,7 @@ function applyCodeblockWrapperClasses(container: HTMLElement) {
 function getPreviewStyleVars(): string {
 	const active = document.querySelector(
 		".markdown-reading-view .markdown-preview-view",
-	) as HTMLElement | null;
+	);
 	if (!active) return "";
 	const computed = getComputedStyle(active);
 	const vars: string[] = [];
@@ -1180,17 +1189,17 @@ function getPreviewStyleVars(): string {
 }
 
 function getReadingViewStyleVars(): string {
-	const reading = document.querySelector(
+	const reading = document.querySelector<HTMLElement>(
 		".markdown-reading-view",
-	) as HTMLElement | null;
+	);
 	if (!reading) return "";
 	return getCssVarString(reading);
 }
 
 function getViewContentStyleVars(): string {
-	const viewContent = document.querySelector(
+	const viewContent = document.querySelector<HTMLElement>(
 		".view-content",
-	) as HTMLElement | null;
+	);
 	if (!viewContent) return "";
 	const computed = getComputedStyle(viewContent);
 	const keys = [
@@ -1227,7 +1236,7 @@ function getCssVarString(el: HTMLElement): string {
 function getPreviewSizerStyle(): string {
 	const sizer = document.querySelector(
 		".markdown-reading-view .markdown-preview-sizer",
-	) as HTMLElement | null;
+	);
 	if (!sizer) return "";
 	const computed = getComputedStyle(sizer);
 	const keys = [
@@ -1250,10 +1259,10 @@ function getPreviewSizerStyle(): string {
 
 function getFrontmatterClasses(app: App, file: TFile): string[] {
 	const cache = app.metadataCache.getFileCache(file);
-	const raw = cache?.frontmatter?.cssclasses;
+	const raw: unknown = cache?.frontmatter?.cssclasses;
 	if (!raw) return [];
-	const classes = Array.isArray(raw)
-		? raw
+	const classes: string[] = Array.isArray(raw)
+		? (raw as unknown[]).map((v) => String(v))
 		: typeof raw === "string"
 			? raw.split(/\s+/)
 			: [];
@@ -1283,7 +1292,7 @@ class OutputFolderModal extends Modal {
 		contentEl.createEl("h3", { text: "Export folder" });
 
 		const isMobile = Boolean(
-			(this.appRef as any).isMobile || Platform.isMobile,
+			(this.appRef as unknown as Record<string, unknown>).isMobile || Platform.isMobile,
 		);
 
 		let input: TextComponent | null = null;
@@ -1317,7 +1326,7 @@ class OutputFolderModal extends Modal {
 		buttons.classList.toggle("is-mobile", isMobile);
 
 		const browseBtn = buttons.createEl("button", { text: "Browse..." });
-		browseBtn.addEventListener("click", async () => {
+		browseBtn.addEventListener("click", () => {
 			if (isMobile) {
 				new FolderSuggestModal(this.appRef, (folderPath) => {
 					if (folderPath) {
@@ -1327,14 +1336,15 @@ class OutputFolderModal extends Modal {
 				}).open();
 				return;
 			}
-			const picked = await showSystemFolderDialog(
+			void showSystemFolderDialog(
 				this.appRef,
 				this.value,
-			);
-			if (picked) {
-				this.value = picked;
-				input?.setValue(picked);
-			}
+			).then((picked) => {
+				if (picked) {
+					this.value = picked;
+					input?.setValue(picked);
+				}
+			});
 		});
 
 		const chooseBtn = buttons.createEl("button", {
@@ -1401,7 +1411,7 @@ class MobileShareModal extends Modal {
 			this.close();
 		});
 
-		const okBtn = buttons.createEl("button", { text: "Export & Save..." });
+		const okBtn = buttons.createEl("button", { text: "Export & save..." });
 		okBtn.addEventListener("click", () => {
 			this.canceled = false;
 			this.close();
@@ -1429,13 +1439,7 @@ class ExportProgressModal extends Modal {
 		contentEl.createEl("h3", { text: this.message });
 		const spinner = contentEl.createEl("div");
 		spinner.className = "obsidian-exporter-spinner";
-		spinner.style.width = "24px";
-		spinner.style.height = "24px";
-		spinner.style.border = "3px solid var(--background-modifier-border)";
-		spinner.style.borderTopColor = "var(--text-accent)";
-		spinner.style.borderRadius = "50%";
-		spinner.style.animation = "obsidian-exporter-spin 1s linear infinite";
-		spinner.style.margin = "8px 0";
+		spinner.setCssStyles({ width: "24px", height: "24px", border: "3px solid var(--background-modifier-border)", borderTopColor: "var(--text-accent)", borderRadius: "50%", animation: "obsidian-exporter-spin 1s linear infinite", margin: "8px 0" });
 		this.statusEl = contentEl.createEl("div", {
 			text: "Preparing export...",
 		});
@@ -1472,15 +1476,13 @@ class PdfReadyModal extends Modal {
 		buttons.className = "export-folder-actions is-mobile";
 
 		const shareBtn = buttons.createEl("button", { text: "Share PDF..." });
-		shareBtn.addEventListener("click", async () => {
-			await this.onShare();
-			this.close();
+		shareBtn.addEventListener("click", () => {
+			void Promise.resolve(this.onShare()).then(() => this.close());
 		});
 
 		const saveBtn = buttons.createEl("button", { text: "Save to vault" });
-		saveBtn.addEventListener("click", async () => {
-			await this.onSave();
-			this.close();
+		saveBtn.addEventListener("click", () => {
+			void Promise.resolve(this.onSave()).then(() => this.close());
 		});
 
 		const cancelBtn = buttons.createEl("button", { text: "Cancel" });
@@ -1537,7 +1539,7 @@ class PdfOptionsModal extends Modal {
 		const widthInput = contentEl.createEl("input", { type: "number" });
 		widthInput.placeholder = "Width (px)";
 		widthInput.value = String(this.widthValue);
-		widthInput.style.width = "100%";
+		widthInput.setCssStyles({ width: "100%" });
 		widthInput.addEventListener("input", () => {
 			const parsed = Number.parseInt(widthInput.value, 10);
 			this.widthValue = Number.isFinite(parsed)
@@ -1548,8 +1550,7 @@ class PdfOptionsModal extends Modal {
 		const heightInput = contentEl.createEl("input", { type: "number" });
 		heightInput.placeholder = "Height (px)";
 		heightInput.value = String(this.heightValue);
-		heightInput.style.width = "100%";
-		heightInput.style.marginTop = "8px";
+		heightInput.setCssStyles({ width: "100%", marginTop: "8px" });
 		heightInput.addEventListener("input", () => {
 			const parsed = Number.parseInt(heightInput.value, 10);
 			this.heightValue = Number.isFinite(parsed)
@@ -1558,19 +1559,17 @@ class PdfOptionsModal extends Modal {
 		});
 
 		const waitForInput = contentEl.createEl("input", { type: "text" });
-		waitForInput.placeholder = "waitFor selector (optional)";
+		waitForInput.placeholder = "waitFor selector (optional)"; // eslint-disable-line obsidianmd/ui/sentence-case -- technical label with camelCase parameter name
 		waitForInput.value = this.waitForValue;
-		waitForInput.style.width = "100%";
-		waitForInput.style.marginTop = "8px";
+		waitForInput.setCssStyles({ width: "100%", marginTop: "8px" });
 		waitForInput.addEventListener("input", () => {
 			this.waitForValue = waitForInput.value.trim();
 		});
 
 		const timeoutInput = contentEl.createEl("input", { type: "number" });
-		timeoutInput.placeholder = "timeout (ms)";
+		timeoutInput.placeholder = "timeout (ms)"; // eslint-disable-line obsidianmd/ui/sentence-case -- technical label with unit abbreviation
 		timeoutInput.value = String(this.timeoutValue);
-		timeoutInput.style.width = "100%";
-		timeoutInput.style.marginTop = "8px";
+		timeoutInput.setCssStyles({ width: "100%", marginTop: "8px" });
 		timeoutInput.addEventListener("input", () => {
 			const parsed = Number.parseInt(timeoutInput.value, 10);
 			this.timeoutValue = Number.isFinite(parsed)
@@ -1579,10 +1578,7 @@ class PdfOptionsModal extends Modal {
 		});
 
 		const buttons = contentEl.createEl("div");
-		buttons.style.display = "flex";
-		buttons.style.justifyContent = "flex-end";
-		buttons.style.gap = "8px";
-		buttons.style.marginTop = "12px";
+		buttons.setCssStyles({ display: "flex", justifyContent: "flex-end", gap: "8px", marginTop: "12px" });
 
 		const cancelBtn = buttons.createEl("button", { text: "Cancel" });
 		cancelBtn.addEventListener("click", () => {
@@ -1638,6 +1634,7 @@ class PdfProgressModal extends Modal {
 	constructor(app: App) {
 		super(app);
 		if (!PdfProgressModal.spinnerStyleInjected) {
+			// eslint-disable-next-line obsidianmd/no-forbidden-elements -- injecting keyframe animation required for spinner
 			const style = document.createElement("style");
 			style.textContent = `@keyframes obsidian-exporter-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`;
 			document.head.appendChild(style);
@@ -1650,13 +1647,7 @@ class PdfProgressModal extends Modal {
 		contentEl.createEl("h3", { text: "Rendering PDF..." });
 		const spinner = contentEl.createEl("div");
 		spinner.className = "obsidian-exporter-spinner";
-		spinner.style.width = "24px";
-		spinner.style.height = "24px";
-		spinner.style.border = "3px solid var(--background-modifier-border)";
-		spinner.style.borderTopColor = "var(--text-accent)";
-		spinner.style.borderRadius = "50%";
-		spinner.style.animation = "obsidian-exporter-spin 1s linear infinite";
-		spinner.style.margin = "8px 0";
+		spinner.setCssStyles({ width: "24px", height: "24px", border: "3px solid var(--background-modifier-border)", borderTopColor: "var(--text-accent)", borderRadius: "50%", animation: "obsidian-exporter-spin 1s linear infinite", margin: "8px 0" });
 		this.statusEl = contentEl.createEl("div", { text: "Uploading HTML..." });
 	}
 	setStatus(message: string) {
