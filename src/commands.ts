@@ -474,8 +474,9 @@ async function generateBannerHtml(
 	const fm = cache?.frontmatter;
 	if (!fm) return null;
 
-	const bannerImage: unknown = fm.banner_image || fm.backdrop || fm.banner;
-	if (!bannerImage) return null;
+	const bannerRaw: unknown = fm.banner_image || fm.backdrop || fm.banner;
+	if (!bannerRaw || typeof bannerRaw !== "string") return null;
+	const bannerImage: string = bannerRaw;
 
 	const bannerPlugin = plugin.app.plugins?.plugins?.["banner-images"] as Record<string, unknown> | undefined;
 	const bannerApi = bannerPlugin?.["api"] as Record<string, unknown> | undefined;
@@ -488,7 +489,7 @@ async function generateBannerHtml(
 	};
 
 	const config = {
-		image: String(bannerImage),
+		image: bannerImage,
 		height: typeof fm.banner_height === "number" ? fm.banner_height : Number(bannerDefaults.height),
 		opacity: typeof fm.banner_opacity === "number" ? Math.min(1, Math.max(0, fm.banner_opacity)) : Number(bannerDefaults.opacity),
 		offset: parseBannerOffset(fm.banner_offset ?? fm.banner_position, String(bannerDefaults.offset)),
@@ -993,8 +994,7 @@ async function getExportContext(
 ): Promise<ExportContext | null> {
 	const file = app.workspace.getActiveFile();
 	if (!file || file.extension !== "md") {
-		// eslint-disable-next-line obsidianmd/ui/sentence-case -- notice text is already sentence case
-		new Notice("Open a markdown note to export.");
+		new Notice("Open a Markdown note to export.");
 		return null;
 	}
 	if (!selectionOnly) {
@@ -1567,7 +1567,7 @@ class PdfOptionsModal extends Modal {
 		});
 
 		const waitForInput = contentEl.createEl("input", { type: "text" });
-		waitForInput.placeholder = "waitFor selector (optional)"; // eslint-disable-line obsidianmd/ui/sentence-case -- technical label with camelCase parameter name
+		waitForInput.placeholder = "waitFor selector (optional)";
 		waitForInput.value = this.waitForValue;
 		waitForInput.setCssStyles({ width: "100%", marginTop: "8px" });
 		waitForInput.addEventListener("input", () => {
@@ -1575,7 +1575,7 @@ class PdfOptionsModal extends Modal {
 		});
 
 		const timeoutInput = contentEl.createEl("input", { type: "number" });
-		timeoutInput.placeholder = "timeout (ms)"; // eslint-disable-line obsidianmd/ui/sentence-case -- technical label with unit abbreviation
+		timeoutInput.placeholder = "Timeout (ms)";
 		timeoutInput.value = String(this.timeoutValue);
 		timeoutInput.setCssStyles({ width: "100%", marginTop: "8px" });
 		timeoutInput.addEventListener("input", () => {

@@ -76,7 +76,6 @@ export function renderExportGeneralTab({ app, plugin, contentEl }: ExportSetting
 
   new Setting(contentEl)
     .setName("Inline local assets")
-    // eslint-disable-next-line obsidianmd/ui/sentence-case -- technical description with acronyms
     .setDesc("Inline local asset URLs (fonts/images) into the exported HTML (helps PDF rendering).")
     .addToggle((toggle) =>
       toggle
@@ -92,7 +91,6 @@ export function renderExportGeneralTab({ app, plugin, contentEl }: ExportSetting
     .setDesc("Use this frontmatter key to override the export filename (without extension).")
     .addText((text) =>
       text
-        // eslint-disable-next-line obsidianmd/ui/sentence-case -- placeholder is a code key name
         .setPlaceholder("export_name")
         .setValue(settings.frontmatterExportKey)
         .onChange(async (value) => {
@@ -103,7 +101,7 @@ export function renderExportGeneralTab({ app, plugin, contentEl }: ExportSetting
 
   new Setting(contentEl)
     .setName("Post-process delay (ms)")
-    .setDesc("Extra wait time for plugins like DataviewJS to finish rendering.") // eslint-disable-line obsidianmd/ui/sentence-case -- DataviewJS is a proper noun
+    .setDesc("Extra wait time for plugins like DataviewJS to finish rendering.")
     .addText((text) =>
       text
         .setPlaceholder("100")
@@ -131,7 +129,6 @@ export function renderExportGeneralTab({ app, plugin, contentEl }: ExportSetting
 export function renderExportPdfTab({ app, plugin, contentEl }: ExportSettingsParams) {
   new Setting(contentEl).setName("PDF export").setHeading();
   contentEl.createEl("p", {
-    // eslint-disable-next-line obsidianmd/ui/sentence-case -- description with proper nouns
     text: "Configure PDF export settings. PDF export requires a configured Lambda API.",
     cls: "setting-item-description",
   });
@@ -141,8 +138,7 @@ export function renderExportPdfTab({ app, plugin, contentEl }: ExportSettingsPar
   // API key plaintext warning
   const warningEl = contentEl.createEl("div");
   warningEl.setCssStyles({ padding: "8px 12px", marginBottom: "16px", background: "var(--background-secondary)", borderRadius: "6px", borderLeft: "3px solid var(--text-warning)", color: "var(--text-muted)", fontSize: "0.85em" });
-  // eslint-disable-next-line obsidianmd/ui/sentence-case -- warning message with proper nouns
-  warningEl.textContent = "Warning: The PDF API key is stored in plaintext in this plugin's data.json file. Do not share your vault data if it contains sensitive keys.";
+  warningEl.textContent = "Warning: the PDF API key is stored in plaintext in this plugin's data.json file. Do not share your vault data if it contains sensitive keys.";
 
   new Setting(contentEl)
     .setName("PDF API URL")
@@ -162,7 +158,6 @@ export function renderExportPdfTab({ app, plugin, contentEl }: ExportSettingsPar
     .setDesc("Bearer token for the PDF API.")
     .addText((text) =>
       text
-        // eslint-disable-next-line obsidianmd/ui/sentence-case -- placeholder example value
         .setPlaceholder("your-api-key")
         .setValue(settings.pdfApiKey)
         .onChange(async (value) => {
@@ -176,7 +171,6 @@ export function renderExportPdfTab({ app, plugin, contentEl }: ExportSettingsPar
     .setDesc("Optional override just for PDF exports. Leave blank to use the default key.")
     .addText((text) =>
       text
-        // eslint-disable-next-line obsidianmd/ui/sentence-case -- placeholder is a code key name
         .setPlaceholder("export_pdf_name")
         .setValue(settings.pdfFrontmatterExportKey)
         .onChange(async (value) => {
@@ -228,7 +222,6 @@ export function renderExportPdfTab({ app, plugin, contentEl }: ExportSettingsPar
     );
 
   new Setting(contentEl)
-    // eslint-disable-next-line obsidianmd/ui/sentence-case -- technical label with camelCase parameter name
     .setName("PDF waitFor selector")
     .setDesc("Optional CSS selector to wait for before rendering.")
     .addText((text) =>
@@ -253,7 +246,7 @@ export function renderExportMarkdownTab({ app, plugin, contentEl }: ExportSettin
 
   new Setting(contentEl)
     .setName("Expand embeds")
-    .setDesc("Inline embedded notes when exporting markdown.") // eslint-disable-line obsidianmd/ui/sentence-case -- description text
+    .setDesc("Inline embedded notes when exporting Markdown.")
     .addToggle((toggle) =>
       toggle
         .setValue(settings.mdExpandEmbeds)
@@ -289,7 +282,7 @@ export function renderExportMarkdownTab({ app, plugin, contentEl }: ExportSettin
 
   new Setting(contentEl)
     .setName("Dataview blocks")
-    .setDesc("How to handle dataview/dataviewjs blocks in exported markdown.") // eslint-disable-line obsidianmd/ui/sentence-case -- dataview/dataviewjs are proper nouns
+    .setDesc("How to handle Dataview/DataviewJS blocks in exported Markdown.")
     .addDropdown((dropdown) =>
       dropdown
         .addOption("keep", "Keep")
@@ -304,10 +297,9 @@ export function renderExportMarkdownTab({ app, plugin, contentEl }: ExportSettin
 
   new Setting(contentEl)
     .setName("Dataview placeholder")
-    .setDesc("Used when Dataview blocks are replaced.") // eslint-disable-line obsidianmd/ui/sentence-case -- Dataview is a proper noun
+    .setDesc("Used when Dataview blocks are replaced.")
     .addText((text) =>
       text
-        // eslint-disable-next-line obsidianmd/ui/sentence-case -- Dataview is a proper noun
         .setPlaceholder("> Dataview output omitted")
         .setValue(settings.mdDataviewPlaceholder)
         .onChange(async (value) => {
