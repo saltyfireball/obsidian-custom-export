@@ -1,5 +1,7 @@
 # Custom Export
 
+![Framerate](https://img.shields.io/badge/framerate-cinematic%2012fps-fff?style=flat&logo=nvidia&logoColor=FFFFFF&label=framerate&labelColor=5B595C&color=FF6188) ![Cursor](https://img.shields.io/badge/cursor-waiting%20hourglass-fff?style=flat&logo=windows95&logoColor=FFFFFF&label=cursor&labelColor=5B595C&color=5C7CFA) ![Inbox](https://img.shields.io/badge/inbox-9999%2B%20adventures-fff?style=flat&logo=gmail&logoColor=FFFFFF&label=inbox&labelColor=5B595C&color=A9DC76) ![Yoink](https://img.shields.io/badge/yoink-borrowed%20code-fff?style=flat&logo=github&logoColor=FFFFFF&label=yoink&labelColor=5B595C&color=A9DC76) ![Lurking](https://img.shields.io/badge/lurking-professional-fff?style=flat&logo=twitch&logoColor=FFFFFF&label=lurking&labelColor=5B595C&color=78DCE8) ![IRC](https://img.shields.io/badge/irc-/join%20chaos-fff?style=flat&logo=matrix&logoColor=FFFFFF&label=IRC&labelColor=5B595C&color=FFD866) ![License](https://img.shields.io/badge/license-good%20luck-fff?style=flat&logo=opensourceinitiative&logoColor=FFFFFF&label=license&labelColor=5B595C&color=78DCE8) ![Pog Level](https://img.shields.io/badge/pog%20level-over%209000-fff?style=flat&logo=twitch&logoColor=FFFFFF&label=pog%20level&labelColor=5B595C&color=5C7CFA) ![Sticker Bombed](https://img.shields.io/badge/sticker%20bombed-laptop%20edition-fff?style=flat&logo=stickermule&logoColor=FFFFFF&label=sticker%20bombed&labelColor=5B595C&color=FF6188)
+
 An Obsidian plugin for exporting notes to HTML, Markdown, and PDF with full theme support, asset handling, and per-device output folders.
 
 ## Features
@@ -34,6 +36,7 @@ An Obsidian plugin for exporting notes to HTML, Markdown, and PDF with full them
 ### Export Commands
 
 Use the command palette (Ctrl/Cmd+P) to access:
+
 - **Export current note to HTML**
 - **Export current note to Markdown**
 - **Export current note to PDF**
