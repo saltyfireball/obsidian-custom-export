@@ -20,7 +20,7 @@ export default class CustomExportPlugin extends Plugin implements ExportPlugin {
 		await this.loadSettings();
 
 		// Initialize device info (used for per-device export folders)
-		this.deviceInfo = getDeviceInfo();
+		this.deviceInfo = getDeviceInfo(this.app);
 		this.applyDeviceExportFolder();
 
 		// Register export commands and file menu items

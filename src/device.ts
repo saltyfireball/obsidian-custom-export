@@ -51,12 +51,13 @@ function getDeviceType() {
   return Platform.isMobile ? DEVICE_TYPES.IOS : DEVICE_TYPES.MACOS;
 }
 
-function getOrCreateDeviceId() {
-  let deviceId = localStorage.getItem(DEVICE_STORAGE_KEY); // eslint-disable-line no-restricted-globals -- device ID is global, not vault-specific
-  if (!deviceId) {
-    deviceId = generateUniqueId();
-    localStorage.setItem(DEVICE_STORAGE_KEY, deviceId); // eslint-disable-line no-restricted-globals -- device ID is global, not vault-specific
+function getOrCreateDeviceId(app: App): string {
+  const stored: string | null = app.loadLocalStorage(DEVICE_STORAGE_KEY) as string | null;
+  if (stored) {
+    return stored;
   }
+  const deviceId = generateUniqueId();
+  app.saveLocalStorage(DEVICE_STORAGE_KEY, deviceId);
   return deviceId;
 }
 
@@ -74,11 +75,11 @@ export function isMobileApp(app: App): boolean {
 	return isMobilePlatform || !hasElectron;
 }
 
-export function getDeviceInfo(): DeviceInfo {
+export function getDeviceInfo(app: App): DeviceInfo {
   const type = getDeviceType();
   const typeLabel = DEVICE_TYPE_LABELS[type] || type;
   return {
-    id: getOrCreateDeviceId(),
+    id: getOrCreateDeviceId(app),
     type,
     typeLabel,
   };

@@ -281,9 +281,7 @@ async function exportHtml(plugin: ExportPlugin, ctx: ExportContext) {
 			assetsFolder = outputInfo.assetsPath;
 		}
 
-		const processedContainer = document.createElement("div");
-		// eslint-disable-next-line @microsoft/sdl/no-inner-html -- cloning rendered HTML for post-processing
-		processedContainer.innerHTML = renderEl.innerHTML;
+		const processedContainer = renderEl.cloneNode(true) as HTMLElement;
 		if (settings.inlineLocalAssets || isMobile) {
 			await inlineLocalImages(app, processedContainer, file.path);
 		}
@@ -501,14 +499,22 @@ async function generateBannerHtml(
 	let finalImageUrl = imageUrl;
 	if (!imageUrl.startsWith("http://") && !imageUrl.startsWith("https://") && !imageUrl.startsWith("data:")) {
 		try {
-			// eslint-disable-next-line no-restricted-globals -- fetching local app:// resource path, not a network request
-			const response = await fetch(imageUrl);
-			const blob = await response.blob();
-			const reader = new FileReader();
-			finalImageUrl = await new Promise<string>((resolve) => {
-				reader.onloadend = () => resolve(reader.result as string);
-				reader.readAsDataURL(blob);
-			});
+			const response = await requestUrl({ url: imageUrl });
+			const buffer = response.arrayBuffer;
+			const bytes = new Uint8Array(buffer);
+			let binary = "";
+			for (let i = 0; i < bytes.byteLength; i++) {
+				binary += String.fromCharCode(bytes[i] ?? 0);
+			}
+			const base64 = btoa(binary);
+			const ext = imageUrl.split(".").pop()?.split("?")[0]?.toLowerCase() ?? "png";
+			const mimeMap: Record<string, string> = {
+				png: "image/png", jpg: "image/jpeg", jpeg: "image/jpeg",
+				gif: "image/gif", svg: "image/svg+xml", webp: "image/webp",
+				bmp: "image/bmp", tif: "image/tiff", tiff: "image/tiff",
+			};
+			const mime = mimeMap[ext] ?? "image/png";
+			finalImageUrl = `data:${mime};base64,${base64}`;
 		} catch {
 			finalImageUrl = imageUrl;
 		}
@@ -770,9 +776,7 @@ async function exportPdf(plugin: ExportPlugin, ctx: ExportContext) {
 			outputInfo = await prepareOutputPaths(app, chosenFolder);
 			assetsFolder = outputInfo.assetsPath;
 		}
-		const processedContainer = document.createElement("div");
-		// eslint-disable-next-line @microsoft/sdl/no-inner-html -- cloning rendered HTML for post-processing
-		processedContainer.innerHTML = renderEl.innerHTML;
+		const processedContainer = renderEl.cloneNode(true) as HTMLElement;
 		if (settings.inlineLocalAssets || isMobile) {
 			await inlineLocalImages(app, processedContainer, file.path);
 		}
@@ -1637,17 +1641,9 @@ class FolderSuggestModal extends FuzzySuggestModal<TFolder> {
 }
 
 class PdfProgressModal extends Modal {
-	private static spinnerStyleInjected = false;
 	private statusEl?: HTMLElement;
 	constructor(app: App) {
 		super(app);
-		if (!PdfProgressModal.spinnerStyleInjected) {
-			// eslint-disable-next-line obsidianmd/no-forbidden-elements -- injecting keyframe animation required for spinner
-			const style = document.createElement("style");
-			style.textContent = `@keyframes obsidian-exporter-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`;
-			document.head.appendChild(style);
-			PdfProgressModal.spinnerStyleInjected = true;
-		}
 	}
 	onOpen() {
 		const { contentEl } = this;

@@ -1,4 +1,4 @@
-import { App, normalizePath } from "obsidian";
+import { App, normalizePath, requestUrl } from "obsidian";
 
 // Selectors to exclude from export (rules with var() that evaluate to empty)
 const EXCLUDED_SELECTORS = [
@@ -120,9 +120,9 @@ export async function inlineLocalAssetUrls(app: App, cssText: string): Promise<s
         const nodeBuf = await fsPromises.readFile(trimmed);
         buffer = nodeBuf.buffer.slice(nodeBuf.byteOffset, nodeBuf.byteOffset + nodeBuf.byteLength) as ArrayBuffer;
       } else {
-        const res = await fetch(trimmed); // eslint-disable-line no-restricted-globals -- CSS asset URLs may be external file:// or relative paths not suitable for requestUrl
-        if (!res.ok) continue;
-        buffer = await res.arrayBuffer();
+        const res = await requestUrl({ url: trimmed });
+        if (res.status >= 400) continue;
+        buffer = res.arrayBuffer;
       }
       if (!buffer) continue;
       const base64 = arrayBufferToBase64(buffer);
