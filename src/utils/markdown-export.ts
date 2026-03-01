@@ -156,11 +156,11 @@ function extractBlock(markdown: string, blockId: string): string | null {
   return null;
 }
 
-async function resolveEmbed(
+function resolveEmbed(
   app: App,
   target: string,
   sourcePath: string
-): Promise<{ type: "file" | "note"; file?: TFile; heading?: string; blockId?: string; alias?: string }> {
+): { type: "file" | "note"; file?: TFile; heading?: string; blockId?: string; alias?: string } {
   const parts = target.split("|");
   const raw = (parts[0] ?? "").trim();
   const alias = parts[1]?.trim();
@@ -234,7 +234,7 @@ async function expandEmbeds(
       result += markdown.slice(lastIndex, index);
     }
     lastIndex = index + full.length;
-    const resolved = await resolveEmbed(app, inner, sourcePath);
+    const resolved = resolveEmbed(app, inner, sourcePath);
     if (resolved.type === "file" && resolved.file) {
       const label = resolved.alias || resolved.file.basename;
       const path = resolved.file.path;

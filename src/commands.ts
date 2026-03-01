@@ -372,7 +372,7 @@ async function exportHtml(plugin: ExportPlugin, ctx: ExportContext) {
 		}
 		new Notice(`Exported HTML: ${outPath}`);
 		if (settings.openAfterExport) {
-			await openPathInShell(app, outPath, outputInfo.isExternal);
+			openPathInShell(app, outPath, outputInfo.isExternal);
 		}
 	} finally {
 		progress?.close();
@@ -457,7 +457,7 @@ async function exportMarkdownNote(plugin: ExportPlugin, ctx: ExportContext) {
 	await outputInfo.writeFile(outPath, result.markdown);
 	new Notice(`Exported Markdown: ${outPath}`);
 	if (settings.openAfterExport) {
-		await openPathInShell(app, outPath, outputInfo.isExternal);
+		openPathInShell(app, outPath, outputInfo.isExternal);
 	}
 }
 
@@ -886,7 +886,7 @@ async function exportPdf(plugin: ExportPlugin, ctx: ExportContext) {
 				await outputInfo.writeBinaryFile(pdfPath, pdfBlob);
 				new Notice(`Exported PDF: ${pdfPath}`);
 				if (settings.openAfterExport) {
-					await openPathInShell(app, pdfPath, outputInfo.isExternal);
+					openPathInShell(app, pdfPath, outputInfo.isExternal);
 				}
 			}
 		} finally {
@@ -1014,11 +1014,11 @@ async function getExportContext(
 	return { file, markdown: selection, isSelection: true };
 }
 
-async function openPathInShell(
+function openPathInShell(
 	app: App,
 	targetPath: string,
 	isExternal: boolean,
-) {
+): void {
 	try {
 		const electron = window.require("electron") as Record<string, unknown> | undefined;
 		const shell = electron?.["shell"] as { showItemInFolder?: (path: string) => void; openPath?: (path: string) => void } | undefined;

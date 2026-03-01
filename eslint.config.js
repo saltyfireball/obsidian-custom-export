@@ -36,6 +36,7 @@ export default defineConfig([
     },
     rules: {
       "obsidianmd/sample-names": "off",
+      "@typescript-eslint/require-await": "error",
       "obsidianmd/ui/sentence-case": ["error", {
         enforceCamelCaseLower: true,
         brands: [...DEFAULT_BRANDS, "Dataview", "DataviewJS", "Lambda", "URLs", "waitFor"],
